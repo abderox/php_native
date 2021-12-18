@@ -76,54 +76,46 @@ try {
 }
 
 
-
-
-
-
-$newFileName="";
+$newFileName = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    $error=array();
-    $extension=array("jpeg","jpg","png","gif");
-    for( $i = 0 ; $i < count($page_names) ; $i++){
-        if($architectures[$i] == "Gallery") {
-            foreach($_FILES["files_$i"]["tmp_name"] as $key=>$tmp_name) {
-                $file_name=$_FILES["files_$i"]["name"][$key];
-                $file_tmp=$_FILES["files_$i"]["tmp_name"][$key];
-                $ext=pathinfo($file_name,PATHINFO_EXTENSION);
+    $error = array();
+    $extension = array("jpeg", "jpg", "png", "gif");
+    for ($i = 0; $i < count($page_names); $i++) {
+        if ($architectures[$i] == "Gallery") {
+            foreach ($_FILES["files_$i"]["tmp_name"] as $key => $tmp_name) {
+                $file_name = $_FILES["files_$i"]["name"][$key];
+                $file_tmp = $_FILES["files_$i"]["tmp_name"][$key];
+                $ext = pathinfo($file_name, PATHINFO_EXTENSION);
 
-                if(in_array($ext,$extension)) {
-                    if(!file_exists("../public/image/photo_gallery/".$file_name)) {
-                        move_uploaded_file($file_tmp=$_FILES["files_$i"]["tmp_name"][$key],"../public/image/photo_gallery/".$file_name);
-                    }
-                    else {
-                        $filename=basename($file_name,$ext);
-                        $newFileName=$filename.time().".".$ext;
-                        move_uploaded_file($file_tmp=$_FILES["files_$i"]["tmp_name"][$key],"../public/image/photo_gallery/".$newFileName);
+                if (in_array($ext, $extension)) {
+                    if (file_exists("../public/image/photo_gallery/" . $file_name)) {
+                        move_uploaded_file($file_tmp = $_FILES["files_$i"]["tmp_name"][$key], "../public/image/photo_gallery/" . $file_name);
+                        $newFileName = $file_name;
+                    } else {
+                        $filename = basename($file_name, $ext);
+                        $newFileName = $filename . time() . "." . $ext;
+                        move_uploaded_file($file_tmp = $_FILES["files_$i"]["tmp_name"][$key], "../public/image/photo_gallery/" . $newFileName);
                     }
                     $sql = "INSERT INTO gallery (file_path, id_page) VALUES ('$newFileName', '$id_pages[$i]')";
-                    if($conn->connect()->exec($sql)) {
+                    if ($conn->connect()->exec($sql)) {
                         continue;
                     } else {
                         $sql_errs++;
                     }
-                }
-                else {
-                    array_push($error,"$file_name");
+                } else {
+                    array_push($error, "$file_name");
                 }
             }
         }
     }
-
+    if($sql_errs == 0) {
+        header("location: ../modules/mainFactory3.php");
+    }
 }
 
 ?>
-
-
-
-
-
 
 
 <body>
@@ -139,17 +131,16 @@ include_once './Nav/navbar.html'
                 <h1 class="text-center mb-5">Step 3</h1>
 
                 <?php
-//                if ($nbre_url_errs != 0) {
-//                    echo '<div class="alert alert-danger">Blank field(s)</div>';
-//                }
+                //                if ($nbre_url_errs != 0) {
+                //                    echo '<div class="alert alert-danger">Blank field(s)</div>';
+                //                }
                 ?>
 
                 <?php
 
                 for ($i = 0; $i < count($page_names); $i++) {
-                        if($architectures[$i] == 'Gallery')
-                        {
-                            echo ' <div class="row">
+                    if ($architectures[$i] == 'Gallery') {
+                        echo ' <div class="row">
                      <div class="col">
                         <h4>' . $page_names[$i] . '</h4>
                     </div>
@@ -157,14 +148,54 @@ include_once './Nav/navbar.html'
                     <div class="row">
                     <div class="col">
                         <div class="input-group">
-                            <input type="file" name="files_'.$i.'[]" class="form-control" multiple/><br>
+                            <input type="file" name="files_' . $i . '[]" class="form-control" multiple/><br>
                         </div>
                         <div class="input-group">
                             <p class="text-muted">Note: Supported image format: .jpeg, .jpg, .png, .gif</p>
                         </div>
                     </div>
-                </div>' ;
-                        }
+                </div>';
+                    }
+
+                    else if ($architectures[$i] == 'Blog') {
+                        echo ' <div class="row">
+                     <div class="col">
+                        <h4>' . $page_names[$i] . '</h4>
+                    </div>
+                    </div>
+                    <div class="row">
+                    <div class="col">
+                        <div class="input-group">
+                            <input type="text" name="headline" class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="input-group">
+                            <input type="file" name="banner" class="form-control"/><br>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="row">
+                     <div class="col">
+                        <h4>' . $page_names[$i] . '</h4>
+                    </div>
+                    </div>
+                    <div class="row">
+                    <div class="col">
+                        <div class="input-group">
+                            <input type="text" name="headline" class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="input-group">
+                            <input type="file" name="banner" class="form-control"/><br>
+                        </div>
+                    </div>
+                    
+                </div>
+                ';
+                    }
                 }
 
                 ?>
@@ -189,21 +220,18 @@ include_once './Nav/navbar.html'
             if (x < maxInputs) {
                 x++;
                 $(footer).append(
-                    '<div class="row"> ' +
-                        '<div class="form-group col"> ' +
-                            '<input type="text" name="url_' + i + '" class="form-control mb-3 " placeholder="URL : (eg:https://m.facebook.com/****)"> ' +
-                            '<span class="invalid-feedback"></span>' +
-                        '</div> ' +
-                        '<div class="form-group col-4"> ' +
-                            '<select id="" name="social_media_' + i + '" class="form-control"> ' +
-                                '<option selected value="Other">--Choose--</option>' +
-                                '<option value="Facebook">Facebook</option>' +
-                                '<option value="Instagram">Instagram</option>' +
-                                '<option value="Google">Google</option>' +
-                                '<option value="Twitter">Twitter</option>' +
-                            '</select>' +
-                        '</div>' +
-                    '</div>');
+                    '<div class="row">'+
+                    '<div class="col">'+
+                    '<div class="input-group">'+
+                    '<input type="text" name="post_title"'+i+' class="form-control"/>'+
+                    '</div>'+
+                     '</div>'+
+                   '<div class="col">'+
+                    '<div class="input-group">'+
+                        '<textarea rows="7" name="post_desc" class="form-control " placeholder="Post content"></textarea>'+
+                    '</div>'+
+                '</div>'+
+            '</div>');
                 i++;
                 $('input[name=number_]').val(i - 1);
             }

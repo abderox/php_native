@@ -12,7 +12,8 @@ $username = $_SESSION["username"];
 
 $conn =new dbConnection();
 
-$localhost = "http://127.0.0.1:4000/template/";
+$localhost = "http://127.0.0.1:4000/";
+//$localhost = "../template/";
 
 
 $fact = new FactoryComposnt();
@@ -20,9 +21,12 @@ $array = array();
 $site_generated="";
 $menu = "";
 $web_name ="";
+$web_desc ="";
 $nbr_pages="";
 $web_id = 0;
 $db_name = "";
+$bg_image = "";
+$is_vertical = 0;
 
 $stmt = $conn->connect()->prepare('SELECT * FROM website_infos WHERE id_user = :id ORDER BY ID DESC LIMIT 1');
 $stmt->bindParam(":id", $usr_id, PDO::PARAM_STR);
@@ -34,7 +38,10 @@ foreach ($result as $res)
     $web_id = $res['id'];
     $db_name = $res['database_name'];
     $web_name =  $res['website_name'];
+    $web_desc =  $res['description'];
     $nbr_pages = $res['nbre_pages'];
+    $bg_image = $res['bg_image'];
+    $is_vertical = (int) $res['navbar'];
     if($res['navbar']=="1")
     {
         $menu = $fact->choose('vertical');
@@ -44,12 +51,12 @@ foreach ($result as $res)
     }
 }
 
-$strGal = 'Gallery';
-
 $stmt = $conn->connect()->prepare('SELECT * FROM page WHERE id_website_infos = :id_website_infos ');
 $stmt->bindParam(":id_website_infos", $web_id, PDO::PARAM_STR);
 $stmt->execute();
 $result_pages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$path = $localhost.'template/'.$username.'/'.$web_name.'/';
 
 $page_names = array();
 $page_urls = array();
@@ -58,67 +65,15 @@ foreach ($result_pages as $res)
 {
 //    $page_names += array($res['page_name']);
     array_push($page_names,$res['page_name']);
-    array_push($page_urls,$res['page_url']);
-
-}
-
-$strGalName = 'Gallery';
-$strGal =array();
-$id_pages = array();
-
-$stmt = $conn->connect()->prepare('SELECT * FROM page WHERE id_website_infos = :id_website_infos and architecture = :gallery ');
-$stmt->bindParam(":id_website_infos", $web_id, PDO::PARAM_STR);
-$stmt->bindParam(":gallery", $strGalName, PDO::PARAM_STR);
-$stmt->execute();
-$result_gallery = $stmt->fetchAll(PDO::FETCH_ASSOC);
-$images =array();
-$gal_names = array();
-
-foreach ($result_gallery as $item)
-{
-    $stmt = $conn->connect()->prepare('SELECT * FROM gallery WHERE id_page = :id_page ');
-    $stmt->bindParam(":id_page", $item['id'], PDO::PARAM_STR);
-    $stmt->execute();
-    $result_ = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($result_ as $item_)
-    {
-       $images = $images + array($item_['file_path']=>$item['id']);
-    }
-    array_push($id_pages,$item['id']);
-    array_push($gal_names,$item['page_name']);
-
-}
-for ($i =0 ; $i<count($id_pages);$i++)
-{$strGal[$i] = "";
-foreach ($images as $key=>$value)
-{
-
-
-        if($value == $id_pages[$i])
-        {
-            $strGal[$i] .= '     
-                <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
-                    <img
-                            src="http://127.0.0.1:4000/public/image/photo_gallery/'.$key.'"
-                            class="w-100 shadow-1-strong rounded mb-4"
-                            alt=""
-                    />
-                    
-                </div>
-            ';
-//            array_push($strGal[$i],$str);
-        }
-    }
+    array_push($page_urls,$path.$res['page_url']);
 
 }
 
 
-//for($i = 0 ;$i<count($id_pages);$i++)
-//{
-//    array_push($id_pages,$item['id']);
-//}
+$bg_image_url = $localhost."public/image/".$bg_image;
 
-$footer =$fact->choose('footer');
+
+$footer = $fact->choose('footer');
 
 $stmt = $conn->connect()->prepare('SELECT * FROM socialmedia WHERE id_webinfos = :id_webinfos');
 $stmt->bindParam(":id_webinfos", $web_id, PDO::PARAM_STR);
@@ -151,16 +106,12 @@ $strIn	=	'<!doctype html>
 
 </head>
     <body>'.
-    $menu->getMenu((int)$nbr_pages, $page_names, $page_urls, $web_name, $localhost)
-    .'
-        <div class="container" style="margin-bottom: 20px">
-         
-                        <h1 class="text-center">'.$web_name.'</h1> ';
 
-$strOut	=
-    	'            
-        </div>
-        '.$footer->getFooter($social_medias, $sm_urls, $db_name).'
+    $menu->getMenu((int)$nbr_pages, $page_names, $page_urls, $web_name, $localhost);
+
+$strD = ($is_vertical) ? "</div></div>" : "";
+
+$strOut	= $strD.$footer->getFooter($social_medias, $sm_urls, $db_name).'
 </body>
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
@@ -168,6 +119,45 @@ $strOut	=
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 </html>';
 
+$strBET = '<header>
+                <!-- Intro settings -->
+                <style>
+                    /* Default height for small devices */
+                    #intro-example {
+                        height: 400px;
+                    }
+
+                    /* Height for devices larger than 992px */
+                    @media (min-width: 992px) {
+                        #intro-example {
+                            height: 600px;
+                        }
+                    }
+                </style>
+                
+                <div
+                        id="intro-example"
+                        class=" text-center bg-image"
+                        style="background-repeat: no-repeat; background-size: cover; min-height:80vh; background-image: url(http://127.0.0.1:4000/public/image/photo_gallery/'.$bg_image.');"
+                >   
+                    <div class="mask" style="height:100%;background-color: rgba(0, 0, 0, 0.7);">
+                        <div class="d-flex justify-content-center align-items-center h-75">
+                            <div class="text-white">
+                                <h1 class="mb-3">'.$web_name.'</h1>
+                                <h5 class="mb-4">'.$web_desc.'</h5>
+                                <a
+                                        class="btn btn-outline-light btn-lg m-2"
+                                        href="#"
+                                        role="button"
+                                        rel="nofollow"
+                                        target="_blank"
+                                >Get started</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Background image -->
+            </header>';
 //foreach($array as $x => $x_value) {
 //    $type = $fact->choose($x_value);
 //    $returnedComposant = $type->getComposant($x);
@@ -176,26 +166,22 @@ $strOut	=
 //}
 
 $path = '../template/'.$username.'/'.$web_name.'/';
-if (!file_exists($path)) {
-    mkdir($path, 0777, true);
-}
+    if (!file_exists($path)) {
+        mkdir($path, 0777, true);
+    }
 
-for ($i=0;$i<count($strGal);$i++)
-{
     $site_generated = $strIn ;
-    $site_generated =$site_generated.'<div class="row">'.$strGal[$i].'</div>'.'<br><br>'.$strOut;
+    $site_generated =$site_generated.$strBET.$strOut;
 
-    $filepath = $path.$gal_names[$i].'.html';
+    $filepath = $path.'home.html';
     $f = fopen($filepath, "w");
     fwrite($f, $site_generated);
     fclose($f);
-}
-header("location: ../modules/mainFactory4.php");
+
+//header("location: ../modules/mainFactory4.php");
 //$site_generated =$site_generated.'<br><br>'.$strOut;
 //$f = fopen("../template/webgen.html", "w");
 //fwrite($f, $site_generated);
 //fclose($f);
-//echo('<a href="../template/webgen.html">Show</a> <br>
-//<a href="../builder/build2.php">proceed</a>
-//.');
+echo('<a href="'.$filepath.'">Show</a>');
 ?>

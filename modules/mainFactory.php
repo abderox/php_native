@@ -8,6 +8,8 @@ include_once './Vertical_Menu.php';
 
 session_start();
 $usr_id = $_SESSION['id'];
+$username = $_SESSION["username"];
+
 $conn =new dbConnection();
 $stmt = $conn->connect()->prepare('SELECT * FROM website_infos WHERE id_user = :id ORDER BY ID DESC LIMIT 1');
 $stmt->bindParam(":id", $usr_id, PDO::PARAM_STR);
@@ -75,10 +77,17 @@ $site_generated = $strIn ;
 //    $returnedComposant = '';
 //}
 $site_generated =$site_generated.'<br><br>'.$strOut;
-$f = fopen("../template/webgen.html", "w");
+
+$path = '../template/'.$username;
+if (!file_exists($path)) {
+    mkdir($path, 0777, true);
+}
+
+$filepath = $path.'/webgen.html';
+$f = fopen($filepath, "w");
 fwrite($f, $site_generated);
 fclose($f);
-echo('<a href="../template/webgen.html">Show</a> <br>
+echo('<a href="'.$filepath.'">Show</a> <br>
 <a href="../builder/build2.php">proceed</a>
 .');
 ?>

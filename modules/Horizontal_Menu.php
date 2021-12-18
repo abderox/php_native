@@ -31,7 +31,7 @@ class Horizontal_Menu implements I_Squelette
 
 
         if(count($pages) >= 1) {
-            $page = $this->menuLinks($pages, $urls, $localhost);
+            $page = $this->menuLinks($pages, $urls, $web_name, $localhost);
         }
         else {
             $page = $this->draftMenu($num);
@@ -51,13 +51,13 @@ class Horizontal_Menu implements I_Squelette
         return $page;
     }
 
-    public function menuLinks($pages, $links, $localhost)
+    public function menuLinks($pages, $links, $web_name, $localhost)
     {
         $page ="";
         for ($i=0 ; $i<count($pages); $i++)
         {
             $page .='<li class="nav-item">
-        <a class="nav-link" href="'.$localhost.$links[$i].'">'.$pages[$i].'</a>
+        <a class="nav-link" href="'.$links[$i].'">'.$pages[$i].'</a>
       </li>' ;
 
         }

@@ -43,11 +43,11 @@ class Vertical_Menu implements I_Squelette
             </a>
         </ul>
     </div>
- 
-</div>';
+    <div class="col p-0">
+ ';
 
         if(count($pages) >= 1) {
-            $pageSIZE = $this->menuLinks($pages, $urls, $localhost);
+            $pageSIZE = $this->menuLinks($pages, $urls,$web_name, $localhost);
         }
         else {
             $pageSIZE=$this->draftMenu($num);
@@ -74,14 +74,14 @@ class Vertical_Menu implements I_Squelette
         return array($pageSM,$pageLG);
     }
 
-    public function menuLinks($pages, $links, $localhost)
+    public function menuLinks($pages, $links, $web_name, $localhost)
     {
         $pageLG = $pageSM = "";
 
         for ($i=0 ; $i<count($pages); $i++)
         {
-            $pageSM .= '<a class="dropdown-item" href="'.$localhost.$links[$i].'">'.$pages[$i].'</a>';
-            $pageLG .= ' <a href="'.$localhost.$links[$i].'" class="bg-dark list-group-item list-group-item-action">
+            $pageSM .= '<a class="dropdown-item" href="'.$links[$i].'">'.$pages[$i].'</a>';
+            $pageLG .= ' <a href="'.$links[$i].'" class="bg-dark list-group-item list-group-item-action">
                 <div class="d-flex w-100 justify-content-start align-items-center">
                     <span class="fa fa-tasks fa-fw mr-3"></span>
                     <span class="menu-collapsed">'.$pages[$i].'</span>

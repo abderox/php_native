@@ -8,6 +8,10 @@ include_once './Vertical_Menu.php';
 
 session_start();
 $usr_id = $_SESSION['id'];
+$username = $_SESSION["username"];
+
+
+
 $conn =new dbConnection();
 $stmt = $conn->connect()->prepare('SELECT * FROM website_infos WHERE id_user = :id ORDER BY ID DESC LIMIT 1');
 $stmt->bindParam(":id", $usr_id, PDO::PARAM_STR);
@@ -41,6 +45,7 @@ foreach ($result as $res)
 
 }
 
+
 $stmt = $conn->connect()->prepare('SELECT * FROM page WHERE id_website_infos = :id_website_infos');
 $stmt->bindParam(":id_website_infos", $web_id, PDO::PARAM_STR);
 $stmt->execute();
@@ -73,6 +78,8 @@ foreach ($result_sm as $res)
     array_push($sm_urls,$res['url']);
 
 }
+
+
 
 $strIn	=	'<!doctype html>
 <html lang="en">
@@ -114,10 +121,20 @@ $site_generated = $strIn ;
 //}
 
 $site_generated =$site_generated.'<br><br>'.$strOut;
-$f = fopen("../template/webgen.html", "w");
+
+$path = '../template/'.$username.'/'.$web_name.'/';
+$filepath = $path.'webgen.html';
+
+if (!file_exists($path)) {
+    mkdir($path, 0777, true);
+}
+
+
+$f = fopen($filepath, "w");
+
 fwrite($f, $site_generated);
 fclose($f);
-echo('<a href="../template/webgen.html">Show</a> <br>
-<a href="../builder/build2.php">proceed</a>
+echo('<a href="'.$filepath.'">Show</a> <br>
+<a href="../builder/build3.php">proceed</a>
 .');
 ?>

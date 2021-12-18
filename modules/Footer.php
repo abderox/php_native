@@ -6,7 +6,7 @@ class Footer implements I_Squelette
     public function getFooter($types,$links,$db_name)
     {
 
-        $strIN = '<footer class="bg-dark text-center text-white" style="position: fixed  ; bottom: 0; width: 100%">
+        $strIN = '<footer class="bg-dark text-center text-white" style=" bottom: 0; width: 100%">
   <!-- Grid container -->
   <div class="container p-4 pb-0">
     <!-- Section: Social media -->

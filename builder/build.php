@@ -10,7 +10,6 @@
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 
-
 <?php
 include_once '../dbUtil/dbConnection.php';
 include_once '../dbUtil/dbCreation.php';
@@ -18,17 +17,21 @@ include_once '../dbUtil/dbCreation.php';
 session_start();
 $usr_id = $_SESSION['id'];
 
+$extension = array();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $bg_image = trim($_POST['bg_image']);
-    $icon = trim($_POST['icon_']);
+
     $db_name = trim($_POST['db_name']);
     $web_name = trim($_POST['web_name']);
+    $web_desc = trim($_POST['web_desc']);
     $num_page = $_POST['num_page'];
     $menu_bool = $_POST['menu_Radio'];
     $web_err = $db_err = $page_err = "";
     $validation_err = "";
     $menu_ = 0;
+    $newFileName = "";
+    $file_err = "";
+    $icon = "";
 
     try {
         $conn = new dbConnection();
@@ -40,11 +43,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $sql = "SELECT id FROM website_infos WHERE database_name = :database_name";
 
             if ($stmt = $conn->connect()->prepare($sql)) {
-                // Bind variables to the prepared statement as parameters
+
                 $stmt->bindParam(":database_name", $db_name, PDO::PARAM_STR);
 
-
-                // Attempt to execute the prepared statement
                 if ($stmt->execute()) {
                     if ($stmt->rowCount() == 1) {
                         $db_err = "This database name is already taken.";
@@ -53,7 +54,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $validation_err = "Oops! Something went wrong. Please try again later.";
                 }
 
-                // Close statement
                 unset($stmt);
             }
         }
@@ -65,15 +65,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (empty(trim($web_name))) {
             $web_err = "Please enter a website name.";
         } else {
-            // Prepare a select statement
+
             $sql = "SELECT id FROM website_infos WHERE website_name = :website_name ";
 
             if ($stmt = $conn->connect()->prepare($sql)) {
-                // Bind variables to the prepared statement as parameters
+
                 $stmt->bindParam(":website_name", $web_name, PDO::PARAM_STR);
 
-
-                // Attempt to execute the prepared statement
                 if ($stmt->execute()) {
                     if ($stmt->rowCount() == 1) {
                         $web_err = "This website name is already taken.";
@@ -82,49 +80,69 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     echo "Oops! Something went wrong. Please try again later.";
                 }
 
-                // Close statement
                 unset($stmt);
             }
         }
+
+        if (empty(trim($web_name))) {
+            $web_err = "Please enter a website description.";
+        }
+
         if ((int)$num_page < 1) {
             $page_err = "Not a valid number.";
         }
 
+        $extension = array("jpeg", "jpg", "png", "gif");
+        $file_name = $_FILES["bg_image"]["name"];
+        $file_tmp = $_FILES["bg_image"]["tmp_name"];
+        $ext = pathinfo($file_name, PATHINFO_EXTENSION);
 
         if (empty($db_err) && empty($web_err) && empty($page_err)) {
 
-            // Prepare an insert statement
-            $sql = "INSERT INTO website_infos (database_name, website_name, bg_image, navbar, nbre_pages, icon,id_user ) VALUES (:database_name, :website_name, :bg_image, :navbar, :nbre_pages, :icon, :id_user)";
-
-            if ($stmt = $conn->connect()->prepare($sql)) {
-                // Bind variables to the prepared statement as parameters
-                $stmt->bindParam(":database_name", $db_name, PDO::PARAM_STR);
-                $stmt->bindParam(":website_name", $web_name, PDO::PARAM_STR);
-
-                $stmt->bindParam(":bg_image", $bg_image, PDO::PARAM_STR);
-                $stmt->bindParam(":navbar", $menu_, PDO::PARAM_STR);
-                $stmt->bindParam(":nbre_pages", $num_page, PDO::PARAM_STR);
-                $stmt->bindParam(":icon", $icon, PDO::PARAM_STR);
-                $stmt->bindParam(":id_user", $usr_id, PDO::PARAM_STR);
-
-                if ($stmt->execute()) {
-                    $con = new dbCreation();
-                    if ($con->createDB($db_name) == 1) {
-                        header("location: ../modules/mainFactory.php");
-                    }
+            if (in_array($ext, $extension)) {
+                if (file_exists("../public/image/" . $file_name)) {
+                    move_uploaded_file($file_tmp = $_FILES["bg_image"]["tmp_name"], "../public/image/" . $file_name);
+                    $newFileName = $file_name;
                 } else {
-                    $validation_err = "Oops! Something went wrong. Please try again later.";
+                    $filename = basename($file_name, $ext);
+                    $newFileName = $filename . time() . "." . $ext;
+                    move_uploaded_file($file_tmp = $_FILES["bg_image"]["tmp_name"], "../public/image/" . $newFileName);
                 }
+            } else {
+                $file_err = 'Upload error';
+            }
 
-                // Close statement
-                unset($stmt);
+            if (empty($file_err)) {
+
+                $sql = "INSERT INTO website_infos (database_name, website_name, description, bg_image, navbar, nbre_pages, icon,id_user ) VALUES (:database_name, :website_name, :website_desc, :bg_image, :navbar, :nbre_pages, :icon, :id_user)";
+
+                if ($stmt = $conn->connect()->prepare($sql)) {
+
+                    $stmt->bindParam(":database_name", $db_name, PDO::PARAM_STR);
+                    $stmt->bindParam(":website_name", $web_name, PDO::PARAM_STR);
+                    $stmt->bindParam(":website_desc", $web_desc, PDO::PARAM_STR);
+                    $stmt->bindParam(":bg_image", $newFileName, PDO::PARAM_STR);
+                    $stmt->bindParam(":navbar", $menu_, PDO::PARAM_STR);
+                    $stmt->bindParam(":nbre_pages", $num_page, PDO::PARAM_STR);
+                    $stmt->bindParam(":icon", $icon, PDO::PARAM_STR);
+                    $stmt->bindParam(":id_user", $usr_id, PDO::PARAM_STR);
+
+                    if ($stmt->execute()) {
+                        $con = new dbCreation();
+                        if ($con->createDB($db_name) == 1) {
+                            header("location: ../modules/mainFactory.php");
+                        }
+                    } else {
+                        $validation_err = "Oops! Something went wrong. Please try again later.";
+                    }
+
+                    // Close statement
+                    unset($stmt);
+                }
             }
         }
 
 
-//$sql = "INSERT INTO `modules` (`id`, `name`, `type`) VALUES (NULL, $button, 'button')";
-//$conn->connect()->exec($sql);
-// echo "New record created successfully";
     } catch (PDOException $e) {
         echo $sql . "<br>" . $e->getMessage();
     }
@@ -141,7 +159,7 @@ include_once './Nav/navbar.html'
         <div class="col-md-2"></div>
         <div class="col-md-8">
             <form class="form-horizontal" id="" method="post"
-                  action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+                  action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" enctype="multipart/form-data">
                 <h1 class="text-center mb-5">Step 1</h1>
                 <?php
                 if (!empty($validation_err)) {
@@ -166,6 +184,15 @@ include_once './Nav/navbar.html'
                             placeholder="Database name">
                     <span class="invalid-feedback"><?php echo $db_err; ?></span>
                 </div>
+                <div class="form-group ">
+                    <label for="">Website Description</label>
+                    <textarea
+                            rows="3"
+                            name="web_desc"
+                            class="form-control <?php echo (!empty($desc_err)) ? 'is-invalid' : ''; ?>"
+                            placeholder="About website"></textarea>
+                    <span class="invalid-feedback"><?php echo $desc_err; ?></span>
+                </div>
                 <div class="form-group">
                     <label for="">N° de pages </label>
                     <input
@@ -180,8 +207,8 @@ include_once './Nav/navbar.html'
                         <span class="input-group-text">Background Image</span>
                     </div>
                     <div class="custom-file">
-                        <input type="file" name="bg_image" class="custom-file-input" id="inputGroupFile01">
-                        <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
+                        <input type="file" name="bg_image" class="custom-file-input" id="bg_image">
+                        <label class="custom-file-label" for="bg_image">Choose file</label>
                     </div>
                 </div>
                 <div class="input-group mb-3">

@@ -17,6 +17,9 @@ include_once '../dbUtil/dbCreation.php';
 
 session_start();
 $usr_id = $_SESSION['id'];
+$username = $_SESSION["username"];
+$localhost = "http://127.0.0.1:4000";
+
 $page_name = array();
 $page_url = array();
 $name_err = array("");
@@ -40,7 +43,7 @@ try {
 
 
 // Prepare a select statement
-    $sql = "SELECT id, nbre_pages FROM website_infos WHERE id_user = :id_user ORDER BY ID DESC LIMIT 1";
+    $sql = "SELECT id, nbre_pages, website_name FROM website_infos WHERE id_user = :id_user ORDER BY ID DESC LIMIT 1";
 
     if ($stmt = $conn->connect()->prepare($sql)) {
         // Bind variables to the prepared statement as parameters
@@ -50,12 +53,15 @@ try {
         foreach ($result as $res) {
             $id_website = (int)$res['id'];
             $num_page = (int)$res['nbre_pages'];
+            $web_name =  $res['website_name'];
         }
         unset($stmt);
     }
 } catch (PDOException $e) {
     echo $sql . "<br>" . $e->getMessage();
 }
+
+$path = $localhost.'/template/'.$username.'/'.$web_name;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $num_fields_sm = trim($_POST['number_']);
@@ -88,7 +94,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $name_err[$i] = "Please enter a page name.";
             $nbre_errs++;
         } else {
-            $page_url[$i] = preg_replace('/\s+/', '_', $page_name[$i]);
+//            $page_url[$i] = $path.'/'.preg_replace('/\s+/', '_', $page_name[$i]).'.html';
+            $page_url[$i] = preg_replace('/\s+/', '_', $page_name[$i]).'.html';
         }
     }
 
@@ -231,14 +238,28 @@ include_once './Nav/navbar.html'
         var i = 2;
 
         var x = 1;
-        $(add_button).click(function(e) {
+        $(add_button).click(function (e) {
             e.preventDefault();
             if (x < maxInputs) {
                 x++;
                 $(footer).append(
-                    '<div class="row"> <div class="form-group col"> <input type="text" name="url_'+i+'" class="form-control mb-3 " placeholder="URL : (eg:https://m.facebook.com/****)"> <span class="invalid-feedback"></span></div> <div class="form-group col-4"> <select id="" name="social_media_'+i+'" class="form-control"> <option selected value="Other">--Choose--</option><option value="Facebook">Facebook</option><option value="Instagram">Instagram</option><option value="Google">Google</option><option value="Twitter">Twitter</option></select></div></div>'); //add input box
-          i++;
-                $('input[name=number_]').val(i-1);
+                    '<div class="row"> ' +
+                    '<div class="form-group col"> ' +
+                    '<input type="text" name="url_' + i + '" class="form-control mb-3 " placeholder="URL : (eg:https://m.facebook.com/****)"> ' +
+                    '<span class="invalid-feedback"></span>' +
+                    '</div> ' +
+                    '<div class="form-group col-4"> ' +
+                    '<select id="" name="social_media_' + i + '" class="form-control"> ' +
+                    '<option selected value="Other">--Choose--</option>' +
+                    '<option value="Facebook">Facebook</option>' +
+                    '<option value="Instagram">Instagram</option>' +
+                    '<option value="Google">Google</option>' +
+                    '<option value="Twitter">Twitter</option>' +
+                    '</select>' +
+                    '</div>' +
+                    '</div>');
+                i++;
+                $('input[name=number_]').val(i - 1);
             }
         });
 
