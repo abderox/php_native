@@ -11,7 +11,7 @@ class UploadFile
         $file_tmp = $_FILES[$name]["tmp_name"];
         $ext = pathinfo($file_name, PATHINFO_EXTENSION);
         $newFileName = "";
-        
+
         if (in_array($ext, $extension)) {
             if (file_exists("../public/image/" . $file_name)) {
                 move_uploaded_file($file_tmp = $_FILES[$name]["tmp_name"], "../public/image/". $dir .'/'. $file_name);

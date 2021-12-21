@@ -158,7 +158,8 @@ include_once './Nav/navbar.html'
                     }
 
                     else if ($architectures[$i] == 'Blog') {
-                        echo ' <div class="row">
+                        echo ' <div class="container1"> 
+                    <div class="row">
                      <div class="col">
                         <h4>' . $page_names[$i] . '</h4>
                     </div>
@@ -166,7 +167,7 @@ include_once './Nav/navbar.html'
                     <div class="row">
                     <div class="col">
                         <div class="input-group">
-                            <input type="text" name="headline" class="form-control"/>
+                            <input type="text" name="headline" placeholder="Headline" class="form-control"/>
                         </div>
                     </div>
                     <div class="col">
@@ -176,23 +177,13 @@ include_once './Nav/navbar.html'
                     </div>
                     
                 </div>
-                <div class="row">
-                     <div class="col">
-                        <h4>' . $page_names[$i] . '</h4>
-                    </div>
-                    </div>
                     <div class="row">
                     <div class="col">
-                        <div class="input-group">
-                            <input type="text" name="headline" class="form-control"/>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="input-group">
-                            <input type="file" name="banner" class="form-control"/><br>
-                        </div>
+                        <button class="btn btn-dark add_form_field mb-4" >+</button>
+                      
                     </div>
                     
+                </div>
                 </div>
                 ';
                     }
