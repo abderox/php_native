@@ -1,7 +1,6 @@
 <?php
 
 namespace View;
-use RenderException\RenderException;
 
 
 class render_1

@@ -13,6 +13,6 @@ class Redirect_
 
     public static function To($page)
     {
-        header('Location:/App/Controller/'.$page);
+        header('Location:'.$page);
     }
 }

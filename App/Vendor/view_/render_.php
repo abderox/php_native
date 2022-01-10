@@ -3,7 +3,7 @@
 
 namespace View;
 use RenderException\RenderException;
-
+include_once './App/Vendor/Exceptions/RenderException.php';
 class render_
 {
     private $data = array();
@@ -25,7 +25,7 @@ class render_
         }
     }
 
-    public function render($variable, $value)
+    public function render($variable="", $value="")
     {
         $this->data[$variable] = $value;
     }

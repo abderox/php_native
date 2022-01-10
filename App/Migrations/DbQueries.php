@@ -15,7 +15,7 @@ class DbQueries
         $this->pass = "";
     }
 
-    public function createUser() {
+    public function createUserTable() {
         return "CREATE TABLE user(
                 id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
                 user_name VARCHAR(30) NOT NULL UNIQUE,

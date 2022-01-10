@@ -1,6 +1,6 @@
 <?php
 namespace DBconection;
-Class dbConnection
+Class DbConnection
 {
     private $user ;
     private $host;
