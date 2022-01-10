@@ -1,8 +1,8 @@
 <?php
 
-
 namespace View;
 use RenderException\RenderException;
+
 
 class render_1
 {
@@ -37,4 +37,5 @@ class render_1
         ob_end_clean();
         return $content;
     }
+
 }
